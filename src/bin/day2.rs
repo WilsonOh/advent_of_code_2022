@@ -8,7 +8,7 @@ B X
 C Z"#;
 */
 
-#[derive(Hash, PartialEq, Eq, Debug)]
+#[derive(Hash, PartialEq, Eq, Debug, Copy, Clone)]
 enum State {
     Win,
     Lose,
@@ -73,12 +73,13 @@ fn part_one(input: &str) -> u32 {
     let score_map: HashMap<State, u32> =
         HashMap::from([(State::Win, 6), (State::Draw, 3), (State::Lose, 0)]);
     input.lines().fold(0, |acc: u32, curr| {
-        let mut tmp = curr.split_whitespace();
-        let a = tmp.next().unwrap().chars().next().unwrap();
-        let b = shape_map
-            .get(&tmp.next().unwrap().chars().next().unwrap())
-            .unwrap();
-        acc + shape_score.get(&b).unwrap() + score_map.get(&get_match_result(&a, b)).unwrap()
+        let tmp: Vec<char> = curr
+            .split_whitespace()
+            .map(|s| s.chars().next().unwrap())
+            .collect();
+        let a = tmp[0];
+        let b = shape_map[&tmp[1]];
+        acc + shape_score[&b] + score_map[&get_match_result(&a, &b)]
     })
 }
 
@@ -89,12 +90,14 @@ fn part_two(input: &str) -> u32 {
         HashMap::from([(State::Win, 6), (State::Draw, 3), (State::Lose, 0)]);
     let shape_score: HashMap<char, u32> = HashMap::from([('A', 1), ('B', 2), ('C', 3)]);
     input.lines().fold(0, |acc: u32, curr| {
-        let mut tmp = curr.split_whitespace();
-        let a = tmp.next().unwrap().chars().next().unwrap();
-        let b = tmp.next().unwrap().chars().next().unwrap();
-        let state = state_map.get(&b).unwrap();
-        let shape = get_shape_needed(state, &a);
-        acc + shape_score.get(&shape).unwrap() + score_map.get(state).unwrap()
+        let tmp: Vec<char> = curr
+            .split_whitespace()
+            .map(|s| s.chars().next().unwrap())
+            .collect();
+        let a = tmp[0];
+        let state = state_map[&tmp[1]];
+        let shape = get_shape_needed(&state, &a);
+        acc + shape_score[&shape] + score_map[&state]
     })
 }
 
