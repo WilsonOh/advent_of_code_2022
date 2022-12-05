@@ -1,6 +1,12 @@
+#![allow(unused)]
+#[macro_use]
+extern crate scan_fmt;
+
 use anyhow::Result;
 use itertools::Itertools;
 use std::fs;
+
+type Section = (u32, u32, u32, u32);
 
 fn get_range(pair: &str) -> (u32, u32) {
     pair.split("-")
@@ -9,47 +15,37 @@ fn get_range(pair: &str) -> (u32, u32) {
         .unwrap()
 }
 
-fn part_one(input: &str) -> u32 {
-    input.lines().fold(0, |acc, curr| {
-        let mut overlaps: bool = false;
-        let pairs = curr.split(",").collect::<Vec<_>>();
-        let (a, b) = get_range(pairs[0]);
-        let (c, d) = get_range(pairs[1]);
-        if (b - a) > (d - c) {
-            if c >= a && d <= b {
-                overlaps = true;
-            }
-        } else {
-            if a >= c && b <= d {
-                overlaps = true;
-            }
-        }
-        acc + if overlaps { 1 } else { 0 }
-    })
+fn get_ranges_fmt(input: &str) -> Vec<Section> {
+    input
+        .lines()
+        .map(|line| scan_fmt!(line, "{d}-{d},{d}-{d}", u32, u32, u32, u32).unwrap())
+        .collect()
 }
 
-fn part_two(input: &str) -> u32 {
-    input.lines().fold(0, |acc, curr| {
-        let mut overlaps: bool = true;
-        let pairs = curr.split(",").collect::<Vec<_>>();
-        let (a, b) = get_range(pairs[0]);
-        let (c, d) = get_range(pairs[1]);
-        if a < c {
-            if b < c {
-                overlaps = false;
-            }
-        } else {
-            if d < a {
-                overlaps = false;
-            }
-        }
-        acc + if overlaps { 1 } else { 0 }
-    })
+fn part_one(sections: &[Section]) -> u32 {
+    sections
+        .iter()
+        .filter(|section| {
+            let (a, b, c, d) = section;
+            (c >= a && d <= b) || (a >= c && b <= d)
+        })
+        .count() as u32
+}
+
+fn part_two(sections: &[Section]) -> u32 {
+    sections
+        .iter()
+        .filter(|section| {
+            let (a, b, c, d) = section;
+            (a <= c && c <= b) || (c <= a && a <= d)
+        })
+        .count() as u32
 }
 
 fn main() -> Result<()> {
     let input = fs::read_to_string("input.txt")?;
-    let ans = part_two(&input);
+    let ranges = get_ranges_fmt(&input);
+    let ans = part_two(&ranges);
     println!("{ans}");
     Ok(())
 }
