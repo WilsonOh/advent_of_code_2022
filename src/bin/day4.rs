@@ -1,9 +1,8 @@
 #![allow(unused)]
-#[macro_use]
-extern crate scan_fmt;
 
 use anyhow::Result;
 use itertools::Itertools;
+use scan_fmt::scan_fmt;
 use std::fs;
 
 type Section = (u32, u32, u32, u32);
