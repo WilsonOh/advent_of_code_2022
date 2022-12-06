@@ -1,4 +1,5 @@
 use anyhow::Result;
+use itertools::Itertools;
 use std::collections::{HashSet, VecDeque};
 
 fn find_idx_after_n_unique_chars(input: &str, n: usize) -> usize {
@@ -30,17 +31,14 @@ fn find_idx_after_n_unique_chars(input: &str, n: usize) -> usize {
 fn find_idx_after_n_unique_chars_alt(input: &str, n: usize) -> usize {
     input
         .chars()
-        .as_str()
-        .as_bytes()
+        .collect_vec() // need to collect into a vector as chars do not have a windows method
         .windows(n)
         .enumerate()
-        .find(|(_, window)| {
-            let s: HashSet<&u8> = HashSet::from_iter(window.iter());
-            s.len() == n
-        })
+        .find(|(_, window)| window.iter().all_unique()) // find the first unique window of n
+                                                        // elements
         .unwrap()
-        .0
-        + n
+        .0 // get index
+        + n // add n to get the first index after n unique chars
 }
 
 fn main() -> Result<()> {
