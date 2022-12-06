@@ -27,10 +27,26 @@ fn find_idx_after_n_unique_chars(input: &str, n: usize) -> usize {
     unreachable!()
 }
 
+fn find_idx_after_n_unique_chars_alt(input: &str, n: usize) -> usize {
+    input
+        .chars()
+        .as_str()
+        .as_bytes()
+        .windows(n)
+        .enumerate()
+        .find(|(_, window)| {
+            let s: HashSet<&u8> = HashSet::from_iter(window.iter());
+            s.len() == n
+        })
+        .unwrap()
+        .0
+        + n
+}
+
 fn main() -> Result<()> {
     let input = std::fs::read_to_string("input.txt")?;
     let part_one_ans = find_idx_after_n_unique_chars(&input, 4);
-    let part_two_ans = find_idx_after_n_unique_chars(&input, 14);
+    let part_two_ans = find_idx_after_n_unique_chars_alt(&input, 14);
     println!("Part one: {part_one_ans}");
     println!("Part two: {part_two_ans}");
     Ok(())
