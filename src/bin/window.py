@@ -1,4 +1,4 @@
-from typing import Generic, Iterable, Self, TypeVar
+from typing import Collection, Generic, Self, TypeVar
 from collections import deque
 
 
@@ -6,14 +6,11 @@ T = TypeVar("T")
 
 
 class Window(Generic[T]):
-    def __init__(
-        self, iterable: Iterable[T], window_size: int, strict: bool = False
-    ) -> None:
+    def __init__(self, iterable: Collection[T], window_size: int) -> None:
         self.window_size = window_size
         self.iterator = iter(iterable)
         self.curr_window = deque()
         self.done = False
-        self.strict = strict
         for _ in range(window_size):
             try:
                 self.curr_window.append(next(self.iterator))
@@ -30,10 +27,6 @@ class Window(Generic[T]):
         try:
             self.curr_window.append(next(self.iterator))
         except StopIteration:
-            if self.strict:
-                raise ValueError(
-                    "strict mode: window size does not divide iterator length"
-                )
             self.done = True
         self.curr_window.popleft()
         return ret
