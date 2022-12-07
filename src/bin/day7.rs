@@ -22,17 +22,19 @@ fn get_file_tree_sizes(input: &str) -> HashMap<String, u32> {
             }
             "ls" => {
                 let total_size = lines
+                    // take until we hit the next command
                     .peeking_take_while(|line| !line.starts_with("$"))
                     .fold(0u32, |acc, file| {
                         let (file_type, _) = file.split_whitespace().collect_tuple().unwrap();
                         if let Ok(size) = file_type.parse::<u32>() {
-                            return acc + size;
+                            acc + size
+                        } else {
+                            acc
                         }
-                        acc
                     });
                 // Update filesize for every single ancestor directory
                 for i in 0..curr_path.len() {
-                    let path = (&curr_path[0..i + 1]).join("/");
+                    let path = (&curr_path[0..=i]).join("/");
                     size_map
                         .entry(path)
                         .and_modify(|size| *size += total_size)
@@ -65,7 +67,7 @@ fn part_two(size_map: &HashMap<String, u32>) -> u32 {
 fn main() -> Result<()> {
     let input = std::fs::read_to_string("input.txt")?;
     let size_map = get_file_tree_sizes(&input);
-    let ans = part_two(&size_map);
+    let ans = part_one(&size_map);
     println!("{ans}");
     Ok(())
 }
