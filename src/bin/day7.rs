@@ -67,7 +67,7 @@ fn part_two(size_map: &HashMap<String, u32>) -> u32 {
 fn main() -> Result<()> {
     let input = std::fs::read_to_string("input.txt")?;
     let size_map = get_file_tree_sizes(&input);
-    let ans = part_one(&size_map);
+    let ans = part_two(&size_map);
     println!("{ans}");
     Ok(())
 }
