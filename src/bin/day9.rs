@@ -31,75 +31,90 @@ fn parse_moves(input: &str) -> Vec<Move> {
         .collect_vec()
 }
 
-/// Check whether the tail is being pulled, i.e. the tail is 2 units or more
-/// away from the head in any direction by calculating the euclidian distance
-/// between the tail and head using the standard formula
 fn tail_is_pulled(head_coords: &Coords, tail_coords: &Coords) -> bool {
     let dist = (((head_coords.row - tail_coords.row).pow(2)
         + (head_coords.col - tail_coords.col).pow(2)) as f64)
         .sqrt();
-    dist >= 2.0
+    dist.floor() as i32 >= 2
 }
 
-fn normalize_coord(num: &i32) -> i32 {
-    num.checked_div(num.abs()).unwrap_or(*num)
-}
-
-/// # Observation: we can get the new coordinates of the tail by simply getting
-/// # the "coord difference" between head and tail.
-///
-/// The sign of the row and col in the coord difference will tell us how to update
-/// the tail coords.
-///
-/// E.g. coord difference = (-dr, -dc) -> tail moves diagonally down-left
-///      coord difference = (dr, 0) -> tail moves upwards
-///      etc...
-///
-/// Since we know that the tail will only shift **one** unit in any of the 8 directions
-/// in any one move, we can simply "normalize" the coord difference to get the unit value
-/// we need for updating the tail coords, be it in the negative or positive direction.
-fn get_new_tail_coords(tail_coords: &Coords, head_coords: &Coords) -> Coords {
-    let dr = normalize_coord(&(head_coords.row - tail_coords.row));
-    let dc = normalize_coord(&(head_coords.col - tail_coords.col));
+fn get_new_tail_coords(head_move: &Move, head_coords: &Coords) -> Coords {
+    let (dr, dc) = head_move.dir;
     Coords {
-        row: tail_coords.row + dr,
-        col: tail_coords.col + dc,
+        row: head_coords.row - dr,
+        col: head_coords.col - dc,
     }
 }
 
-/// Generalized function to solve Day 9 for n knots
-fn knots(moves: &[Move], num_knots: usize) -> u32 {
-    let mut knots = vec![Coords::default(); num_knots];
+fn print_grid(knots: &[Coords]) {
+    println!("{knots:?}");
+    let mut grid = [['.'; 6]; 5];
+    grid[0][0] = 's';
+    for (idx, knot) in knots.iter().rev().enumerate() {
+        let mut c = char::from_digit(idx as u32, 10).unwrap();
+        if idx == 0 {
+            c = 'H';
+        }
+        grid[knot.row as usize][knot.col as usize] = c;
+    }
+    for row in grid {
+        println!("{row:?}");
+    }
+}
+
+fn part_one(moves: &[Move]) -> u32 {
+    let mut tail_coords = Coords::default();
+    let mut head_coords = Coords::default();
+    let mut ans = 1u32;
+    let mut visited: HashSet<Coords> = HashSet::new();
+    visited.insert(tail_coords);
+    for m in moves {
+        let (dr, dc) = m.dir;
+        for _ in 0..m.mag {
+            head_coords.row += dr;
+            head_coords.col += dc;
+            if tail_is_pulled(&head_coords, &tail_coords) {
+                tail_coords = get_new_tail_coords(m, &head_coords);
+                if !visited.contains(&tail_coords) {
+                    visited.insert(tail_coords);
+                    ans += 1;
+                }
+            }
+        }
+    }
+    ans
+}
+
+fn part_two(moves: &[Move]) -> u32 {
+    let mut knots = [Coords::default(); 10];
+    let mut ans = 1u32;
     let mut visited: HashSet<Coords> = HashSet::new();
     visited.insert(knots[0]);
-    moves.iter().for_each(|m| {
+    for m in moves {
         let (dr, dc) = m.dir;
         for _ in 0..m.mag {
             knots[0].row += dr;
             knots[0].col += dc;
-            for i in 1..num_knots {
-                // Compare each tail knot with the knot directly in front of it
+            for i in 1..=9 {
                 if tail_is_pulled(&knots[i - 1], &knots[i]) {
-                    knots[i] = get_new_tail_coords(&knots[i], &knots[i - 1]);
-                    // only insert the path of the TAIL knot,
-                    // HashSet will take care of duplicates for us
-                    if i == num_knots - 1 {
+                    knots[i] = get_new_tail_coords(m, &knots[i - 1]);
+                    if i == 9 && !visited.contains(&knots[i]) {
                         visited.insert(knots[i]);
+                        ans += 1;
                     }
                 }
             }
+            println!("{knots:?}\n");
         }
-    });
-    // The size of the HashSet is basically the number of coords that
-    // TAIL has been to
-    visited.len() as u32
+    }
+    ans
 }
 
 fn main() -> Result<()> {
-    let input = std::fs::read_to_string("input.txt")?;
+    let input = std::fs::read_to_string("sample.txt")?;
     let moves = parse_moves(&input);
-    let part_one_ans = knots(&moves, 2);
-    let part_two_ans = knots(&moves, 10);
+    let part_one_ans = part_one(&moves);
+    let part_two_ans = part_two(&moves);
     println!("part one: {part_one_ans}");
     println!("part two: {part_two_ans}");
     Ok(())
