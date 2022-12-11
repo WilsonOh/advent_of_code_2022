@@ -61,7 +61,7 @@ fn print_grid(grid: &[[char; 40]]) {
 
 fn part_two(instructions: &[Instruction]) {
     let pixel_pos = get_pixel_positions_for_each_cycle(instructions);
-    let mut grid = [['.'; 40]; 6];
+    let mut grid = [[' '; 40]; 6];
     for (row_idx, row) in pixel_pos.chunks(40).enumerate() {
         for (col_idx, pos) in row.iter().enumerate() {
             if (pos - 1..=pos + 1).contains(&(col_idx as i32)) {
