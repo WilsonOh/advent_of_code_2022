@@ -1,121 +1,79 @@
 use anyhow::Result;
+use itertools::Itertools;
 use num::Integer;
 use std::collections::VecDeque;
 
-struct Monkey {
+struct Monkey<'a> {
     items: VecDeque<u64>,
-    operation: fn(u64) -> u64,
-    test: fn(u64) -> usize,
-    div_by: u64,
+    operation: Box<dyn Fn(u64) -> u64 + 'a>,
+    test_func: Box<dyn Fn(u64) -> usize + 'a>,
+    test_num: u64,
     times_inspected: u64,
 }
 
-fn get_sample_hardcoded_monkeys() -> Vec<Monkey> {
-    vec![
-        Monkey {
-            items: VecDeque::from([79, 98]),
-            operation: |x| x * 19,
-            test: |x| if x % 23 == 0 { 2 } else { 3 },
-            div_by: 23,
-            times_inspected: 0,
-        },
-        Monkey {
-            items: VecDeque::from([54, 65, 75, 74]),
-            operation: |x| x + 6,
-            test: |x| if x % 19 == 0 { 2 } else { 0 },
-            div_by: 19,
-            times_inspected: 0,
-        },
-        Monkey {
-            items: VecDeque::from([79, 60, 97]),
-            operation: |x| x * x,
-            test: |x| if x % 13 == 0 { 1 } else { 3 },
-            div_by: 13,
-            times_inspected: 0,
-        },
-        Monkey {
-            items: VecDeque::from([74]),
-            operation: |x| x + 3,
-            test: |x| if x % 17 == 0 { 0 } else { 1 },
-            div_by: 17,
-            times_inspected: 0,
-        },
-    ]
+fn parse_monkey(monkey: &str) -> Monkey {
+    let lines = monkey.lines().collect_vec();
+    let items: VecDeque<u64> = lines[1]
+        .strip_prefix("  Starting items: ")
+        .unwrap()
+        .split(", ")
+        .map(|item| item.parse().unwrap())
+        .collect();
+    let (op, val) = lines[2]
+        .strip_prefix("  Operation: new = old ")
+        .unwrap()
+        .split_whitespace()
+        .collect_tuple()
+        .unwrap();
+    let operation: Box<dyn Fn(u64) -> u64> = match (op, val) {
+        ("*", "old") => Box::new(|x| x * x),
+        ("*", val) => Box::new(move |x| x * val.clone().parse::<u64>().unwrap()),
+        ("+", val) => Box::new(move |x| x + val.clone().parse::<u64>().unwrap()),
+        _ => panic!("invalid operation"),
+    };
+    let test_num: u64 = lines[3]
+        .strip_prefix("  Test: divisible by ")
+        .unwrap()
+        .parse()
+        .unwrap();
+    let true_monkey: usize = lines[4]
+        .strip_prefix("    If true: throw to monkey ")
+        .unwrap()
+        .parse()
+        .unwrap();
+    let false_monkey: usize = lines[5]
+        .strip_prefix("    If false: throw to monkey ")
+        .unwrap()
+        .parse()
+        .unwrap();
+    let test_func: Box<dyn Fn(u64) -> usize> = Box::new(move |x| {
+        if x % test_num == 0 {
+            true_monkey
+        } else {
+            false_monkey
+        }
+    });
+    Monkey {
+        items,
+        operation,
+        test_func,
+        test_num,
+        times_inspected: 0,
+    }
 }
 
-fn get_actual_hardcoded_monkeys() -> Vec<Monkey> {
-    vec![
-        Monkey {
-            items: VecDeque::from([96, 60, 68, 91, 83, 57, 85]),
-            operation: |x| x * 2,
-            test: |x| if x % 17 == 0 { 2 } else { 5 },
-            div_by: 17,
-            times_inspected: 0,
-        },
-        Monkey {
-            items: VecDeque::from([75, 78, 68, 81, 73, 99]),
-            operation: |x| x + 3,
-            test: |x| if x % 13 == 0 { 7 } else { 4 },
-            div_by: 13,
-            times_inspected: 0,
-        },
-        Monkey {
-            items: VecDeque::from([69, 86, 67, 55, 96, 69, 94, 85]),
-            operation: |x| x + 6,
-            test: |x| if x % 19 == 0 { 6 } else { 5 },
-            div_by: 19,
-            times_inspected: 0,
-        },
-        Monkey {
-            items: VecDeque::from([88, 75, 74, 98, 80]),
-            operation: |x| x + 5,
-            test: |x| if x % 7 == 0 { 7 } else { 1 },
-            div_by: 7,
-            times_inspected: 0,
-        },
-        Monkey {
-            items: VecDeque::from([82]),
-            operation: |x| x + 8,
-            test: |x| if x % 11 == 0 { 0 } else { 2 },
-            div_by: 11,
-            times_inspected: 0,
-        },
-        Monkey {
-            items: VecDeque::from([72, 92, 92]),
-            operation: |x| x * 5,
-            test: |x| if x % 3 == 0 { 6 } else { 3 },
-            div_by: 3,
-            times_inspected: 0,
-        },
-        Monkey {
-            items: VecDeque::from([74, 61]),
-            operation: |x| x * x,
-            test: |x| if x % 2 == 0 { 3 } else { 1 },
-            div_by: 2,
-            times_inspected: 0,
-        },
-        Monkey {
-            items: VecDeque::from([76, 86, 83, 55]),
-            operation: |x| x + 4,
-            test: |x| if x % 5 == 0 { 4 } else { 0 },
-            div_by: 5,
-            times_inspected: 0,
-        },
-    ]
+fn get_monkeys(input: &str) -> Vec<Monkey> {
+    input.split("\n\n").map(parse_monkey).collect_vec()
 }
 
-fn calculate_monkey_business(mut monkeys: Vec<Monkey>, rounds: usize, div_three: bool) -> u64 {
-    let mod_by = monkeys.iter().fold(1, |acc, curr| acc.lcm(&curr.div_by));
-
+fn calculate_monkey_business(input: &str, rounds: usize, div_by: u64) -> u64 {
+    let mut monkeys = get_monkeys(&input);
+    let mod_by = monkeys.iter().fold(1, |acc, curr| acc.lcm(&curr.test_num));
     for _ in 0..rounds {
         for i in 0..monkeys.len() {
             while let Some(curr_item) = monkeys[i].items.pop_front() {
-                let worry_level = if div_three {
-                    ((monkeys[i].operation)(curr_item) / 3) % mod_by
-                } else {
-                    (monkeys[i].operation)(curr_item) % mod_by
-                };
-                let throw_to_monkey = (monkeys[i].test)(worry_level);
+                let worry_level = ((monkeys[i].operation)(curr_item) / div_by) % mod_by;
+                let throw_to_monkey = (monkeys[i].test_func)(worry_level);
                 monkeys[throw_to_monkey].items.push_back(worry_level);
                 monkeys[i].times_inspected += 1;
             }
@@ -129,8 +87,9 @@ fn calculate_monkey_business(mut monkeys: Vec<Monkey>, rounds: usize, div_three:
 }
 
 fn main() -> Result<()> {
-    let part_one_ans = calculate_monkey_business(get_actual_hardcoded_monkeys(), 20, true);
-    let part_two_ans = calculate_monkey_business(get_actual_hardcoded_monkeys(), 10_000, false);
+    let input = std::fs::read_to_string("input.txt")?;
+    let part_one_ans = calculate_monkey_business(&input, 20, 3);
+    let part_two_ans = calculate_monkey_business(&input, 10_000, 1);
     println!("part one: {part_one_ans}");
     println!("part two: {part_two_ans}");
     Ok(())
