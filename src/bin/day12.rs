@@ -4,15 +4,17 @@ use std::collections::VecDeque;
 
 fn bfs_get_path_len(grid: &[Vec<u32>], start: (usize, usize), end: (usize, usize)) -> u32 {
     let dirs: [(i32, i32); 4] = [(-1, 0), (1, 0), (0, -1), (0, 1)];
-    let mut visited = vec![vec![false; grid[0].len()]; grid.len()];
+
     let mut q: VecDeque<(usize, usize)> = VecDeque::from([start]);
-    let mut parent = vec![vec![(-1, -1); grid[0].len()]; grid.len()];
+
+    let mut visited = vec![vec![false; grid[0].len()]; grid.len()];
+    let mut dist: Vec<Vec<u32>> = vec![vec![u32::MAX; grid[0].len()]; grid.len()];
+    dist[start.0][start.1] = 0;
     visited[start.0][start.1] = true;
-    let mut completed = false;
+
     while let Some((row, col)) = q.pop_front() {
         if (row, col) == end {
-            completed = true;
-            break;
+            return dist[row][col];
         }
         for (dr, dc) in dirs {
             let nr = row as i32 + dr;
@@ -24,21 +26,11 @@ fn bfs_get_path_len(grid: &[Vec<u32>], start: (usize, usize), end: (usize, usize
                     && !visited[nr][nc]
                 {
                     visited[nr][nc] = true;
-                    parent[nr][nc] = (row as i32, col as i32);
+                    dist[nr][nc] = dist[nr][nc].min(dist[row][col] + 1);
                     q.push_back((nr, nc));
                 }
             }
         }
-    }
-    // only calculate and return the path length if we actually reached the end point
-    if completed {
-        let mut curr = (end.0 as i32, end.1 as i32);
-        let mut ans = 0;
-        while curr != (-1, -1) {
-            ans += 1;
-            curr = parent[curr.0 as usize][curr.1 as usize];
-        }
-        return ans - 1;
     }
     u32::MAX
 }
