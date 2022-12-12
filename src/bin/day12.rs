@@ -2,18 +2,18 @@ use anyhow::Result;
 use itertools::Itertools;
 use std::collections::VecDeque;
 
-fn part_one(input: &str) -> u32 {
+fn bfs_get_path_len(grid: &[Vec<u32>], start: (usize, usize), end: (usize, usize)) -> u32 {
     let dirs: [(i32, i32); 4] = [(-1, 0), (1, 0), (0, -1), (0, 1)];
-    let (start, end) = get_start_and_end_pos(&input);
-    let grid = parse_grid(&input);
     let mut visited = vec![vec![false; grid[0].len()]; grid.len()];
     let mut q: VecDeque<(usize, usize)> = VecDeque::from([start]);
     let mut parent = vec![vec![(-1, -1); grid[0].len()]; grid.len()];
+    visited[start.0][start.1] = true;
+    let mut completed = false;
     while let Some((row, col)) = q.pop_front() {
         if (row, col) == end {
+            completed = true;
             break;
         }
-        visited[row][col] = true;
         for (dr, dc) in dirs {
             let nr = row as i32 + dr;
             let nc = col as i32 + dc;
@@ -23,21 +23,53 @@ fn part_one(input: &str) -> u32 {
                 if ((grid[nr][nc] < grid[row][col]) || (grid[nr][nc] - grid[row][col] <= 1))
                     && !visited[nr][nc]
                 {
-                    if parent[nr][nc] == (-1, -1) {
-                        parent[nr][nc] = (row as i32, col as i32);
-                    }
+                    visited[nr][nc] = true;
+                    parent[nr][nc] = (row as i32, col as i32);
                     q.push_back((nr, nc));
                 }
             }
         }
     }
-    let mut curr = (end.0 as i32, end.1 as i32);
-    let mut ans = 0;
-    while curr != (-1, -1) {
-        ans += 1;
-        curr = parent[curr.0 as usize][curr.1 as usize];
+    // only calculate and return the path length if we actually reached the end point
+    if completed {
+        let mut curr = (end.0 as i32, end.1 as i32);
+        let mut ans = 0;
+        while curr != (-1, -1) {
+            ans += 1;
+            curr = parent[curr.0 as usize][curr.1 as usize];
+        }
+        return ans - 1;
     }
-    ans - 1
+    u32::MAX
+}
+
+fn part_one(input: &str) -> u32 {
+    let grid = parse_grid(&input);
+    let (start, end) = get_start_and_end_pos(&input);
+    bfs_get_path_len(&grid, start, end)
+}
+
+fn part_two(input: &str) -> u32 {
+    let grid = parse_grid(&input);
+    let (_, end) = get_start_and_end_pos(&input);
+    let a_pos = get_a_pos(&input);
+    a_pos
+        .iter()
+        .map(|start| bfs_get_path_len(&grid, *start, end))
+        .min()
+        .unwrap() as u32
+}
+
+fn get_a_pos(input: &str) -> Vec<(usize, usize)> {
+    let mut pos: Vec<(usize, usize)> = vec![];
+    for (row, line) in input.lines().enumerate() {
+        for (col, ch) in line.chars().enumerate() {
+            if ch == 'S' || ch == 'a' {
+                pos.push((row, col));
+            }
+        }
+    }
+    pos
 }
 
 fn parse_grid(input: &str) -> Vec<Vec<u32>> {
@@ -77,6 +109,9 @@ fn get_start_and_end_pos(input: &str) -> ((usize, usize), (usize, usize)) {
 
 fn main() -> Result<()> {
     let input = std::fs::read_to_string("input.txt")?;
-    println!("{}", part_one(&input));
+    let part_one_ans = part_one(&input);
+    let part_two_ans = part_two(&input);
+    println!("part one: {part_one_ans}");
+    println!("part two: {part_two_ans}");
     Ok(())
 }
