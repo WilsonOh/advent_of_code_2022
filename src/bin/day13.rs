@@ -13,7 +13,7 @@ impl PartialOrd for TreeNode {
         match (self, other) {
             (TreeNode::Internal(children_one), TreeNode::Internal(children_two)) => {
                 for (c1, c2) in children_one.iter().zip(children_two) {
-                    if c1.partial_cmp(c2) != Some(std::cmp::Ordering::Equal) {
+                    if c1 != c2 {
                         return c1.partial_cmp(c2);
                     }
                 }
