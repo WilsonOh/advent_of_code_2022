@@ -12,6 +12,7 @@ anyhow = "1.0.66"
 dotenv = "0.15.0"
 itertools = "0.10.5"
 num = "0.4.0"
+pathfinding = "4.0.1"
 reqwest = "0.11.13"
 scan_fmt = "0.2.6"
 tokio = { version = "1.22.0", features = ["full"] }
