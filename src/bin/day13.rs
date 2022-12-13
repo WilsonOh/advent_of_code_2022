@@ -1,7 +1,6 @@
-use std::str::Chars;
-
 use anyhow::Result;
 use itertools::Itertools;
+use std::str::Chars;
 
 #[derive(Debug, Clone, PartialEq, Eq, Ord)]
 enum TreeNode {
@@ -33,6 +32,7 @@ impl PartialOrd for TreeNode {
 
 fn parse_node(chars: &mut Chars) -> TreeNode {
     let mut st: Vec<TreeNode> = vec![];
+    // for handling multi-digit numbers
     let mut tmp = String::new();
     while let Some(curr) = (*chars).next() {
         match curr {
