@@ -57,6 +57,7 @@ fn parse_node(chars: &mut Chars) -> TreeNode {
 
 fn part_one(input: &str) -> u32 {
     let node_pairs = input
+        .trim()
         .split("\n\n")
         .filter_map(|line| {
             line.split("\n")
@@ -83,6 +84,9 @@ fn part_two(input: &str) -> u32 {
         .flat_map(|pair| pair.split("\n"))
         .map(|node| parse_node(&mut node.chars()))
         .collect_vec();
+    for node in &nodes {
+        println!("{node:?}");
+    }
     let dividers = vec![
         parse_node(&mut "[[2]]".chars()),
         parse_node(&mut "[[6]]".chars()),
@@ -99,7 +103,7 @@ fn part_two(input: &str) -> u32 {
 }
 
 fn main() -> Result<()> {
-    let input = std::fs::read_to_string("input.txt")?;
+    let input = std::fs::read_to_string("sample.txt")?;
     let part_one_ans = part_one(&input);
     let part_two_ans = part_two(&input);
     println!("part one: {part_one_ans}");
