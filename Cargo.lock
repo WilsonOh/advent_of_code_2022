@@ -11,6 +11,7 @@ dependencies = [
  "itertools",
  "num",
  "pathfinding",
+ "regex",
  "reqwest",
  "scan_fmt",
  "tokio",

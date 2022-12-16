@@ -68,6 +68,7 @@ fn part_two(sources: &HashSet<(i32, i32, i32)>, bound: i32) -> u32 {
                 let x = sx + (dx * signx);
                 let y = sy + (dy * signy);
                 if (x >= 0 && x <= bound) && (y >= 0 && y <= bound) {
+                    assert_eq!((x.abs_diff(*sx) + y.abs_diff(*sy)) as i32, *dist + 1);
                     if is_valid_pos(sources, x, y) {
                         return ((x * 4_000_000) + y) as u32;
                     }
