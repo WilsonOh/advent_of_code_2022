@@ -24,12 +24,12 @@ fn reaches_outside(coords: &HashSet<Vec3>, curr: Vec3) -> bool {
     let mut q: VecDeque<Vec3> = VecDeque::from([curr]);
     let mut visited: HashSet<Vec3> = HashSet::from_iter(coords.iter().copied());
     while let Some(curr) = q.pop_front() {
+        let Vec3(x, y, z) = curr;
         if !visited.contains(&curr) {
             visited.insert(curr);
-            if visited.len() > 5000 {
+            if !(&[x, y, z]).iter().all(|&c| c >= 0 && c <= 19) {
                 return true;
             }
-            let Vec3(x, y, z) = curr;
             for delta in [-1, 1] {
                 q.push_back(Vec3(x + delta, y, z));
                 q.push_back(Vec3(x, y + delta, z));
