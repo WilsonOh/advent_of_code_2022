@@ -8,7 +8,7 @@ fn parse_grid(input: &str) -> (Vec<Vec<bool>>, (usize, usize)) {
             line.split(" -> ")
                 .map(|coord| {
                     coord
-                        .split(",")
+                        .split(',')
                         .map(|c| c.parse::<usize>().unwrap())
                         .collect_tuple()
                         .unwrap()
@@ -65,7 +65,7 @@ fn parse_grid_two(input: &str) -> (Vec<Vec<bool>>, (usize, usize)) {
             line.split(" -> ")
                 .map(|coord| {
                     coord
-                        .split(",")
+                        .split(',')
                         .map(|c| c.parse::<usize>().unwrap())
                         .collect_tuple()
                         .unwrap()
@@ -130,7 +130,7 @@ fn print_grid(grid: &Vec<Vec<bool>>) {
 }
 
 fn part_one(input: &str) -> u32 {
-    let (mut grid, sand_point) = parse_grid(&input);
+    let (mut grid, sand_point) = parse_grid(input);
     let mut ans = 0;
     let mut curr_pos = sand_point;
     'outer: loop {
@@ -163,7 +163,7 @@ fn part_one(input: &str) -> u32 {
 }
 
 fn part_two(input: &str) -> u32 {
-    let (mut grid, sand_point) = parse_grid_two(&input);
+    let (mut grid, sand_point) = parse_grid_two(input);
     let mut ans = 0;
     let mut curr_pos = sand_point;
     let mut extra_rows = vec![vec![false; grid[0].len()], vec![true; grid[0].len()]];

@@ -55,7 +55,7 @@ fn print_grid(grid: &[[char; 40]]) {
         for col in row {
             print!("{col}");
         }
-        println!("");
+        println!();
     }
 }
 

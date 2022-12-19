@@ -36,15 +36,15 @@ fn bfs_get_path_len(grid: &[Vec<u32>], start: (usize, usize), end: (usize, usize
 }
 
 fn part_one(input: &str) -> u32 {
-    let grid = parse_grid(&input);
-    let (start, end) = get_start_and_end_pos(&input);
+    let grid = parse_grid(input);
+    let (start, end) = get_start_and_end_pos(input);
     bfs_get_path_len(&grid, start, end)
 }
 
 fn part_two(input: &str) -> u32 {
-    let grid = parse_grid(&input);
-    let (_, end) = get_start_and_end_pos(&input);
-    let a_pos = get_a_pos(&input);
+    let grid = parse_grid(input);
+    let (_, end) = get_start_and_end_pos(input);
+    let a_pos = get_a_pos(input);
     a_pos
         .iter()
         .map(|start| bfs_get_path_len(&grid, *start, end))
@@ -76,7 +76,7 @@ fn parse_grid(input: &str) -> Vec<Vec<u32>> {
                     if ch == 'E' {
                         return 25;
                     }
-                    return (ch as u32) - ('a' as u32);
+                    (ch as u32) - ('a' as u32)
                 })
                 .collect_vec()
         })

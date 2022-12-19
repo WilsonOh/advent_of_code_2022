@@ -62,7 +62,7 @@ fn get_shape_needed(state: &State, enemy_move: &Move) -> Move {
             Move::Paper => Move::Rock,
             Move::Scissors => Move::Paper,
         },
-        State::Draw => enemy_move.clone(),
+        State::Draw => *enemy_move,
     }
 }
 

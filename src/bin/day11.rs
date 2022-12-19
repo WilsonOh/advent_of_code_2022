@@ -27,8 +27,8 @@ fn parse_monkey(monkey: &str) -> Monkey {
         .unwrap();
     let operation: Box<dyn Fn(u64) -> u64> = match (op, val) {
         ("*", "old") => Box::new(|x| x * x),
-        ("*", val) => Box::new(move |x| x * val.clone().parse::<u64>().unwrap()),
-        ("+", val) => Box::new(move |x| x + val.clone().parse::<u64>().unwrap()),
+        ("*", val) => Box::new(move |x| x * val.parse::<u64>().unwrap()),
+        ("+", val) => Box::new(move |x| x + val.parse::<u64>().unwrap()),
         _ => panic!("invalid operation"),
     };
     let test_num: u64 = lines[3]
@@ -67,7 +67,7 @@ fn get_monkeys(input: &str) -> Vec<Monkey> {
 }
 
 fn calculate_monkey_business(input: &str, rounds: usize, div_by: u64) -> u64 {
-    let mut monkeys = get_monkeys(&input);
+    let mut monkeys = get_monkeys(input);
     let mod_by = monkeys.iter().fold(1, |acc, curr| acc.lcm(&curr.test_num));
     for _ in 0..rounds {
         for i in 0..monkeys.len() {
@@ -80,10 +80,10 @@ fn calculate_monkey_business(input: &str, rounds: usize, div_by: u64) -> u64 {
         }
     }
     monkeys.sort_by_key(|monkey| monkey.times_inspected);
-    (&monkeys[monkeys.len() - 2..])
+    monkeys[monkeys.len() - 2..]
         .iter()
         .map(|monkey| monkey.times_inspected)
-        .fold(1, |acc, curr| acc * curr)
+        .product()
 }
 
 fn main() -> Result<()> {

@@ -33,8 +33,8 @@ fn part_two(input: &str) -> u32 {
 
 fn parse_into_matrix(input: &str) -> (Matrix<u8>, (usize, usize), (usize, usize)) {
     let mut m = Matrix::from_rows(input.lines().map(str::bytes)).unwrap();
-    let start = m.indices().find(|&idx| m[idx] == b'S').unwrap();
-    let end = m.indices().find(|&idx| m[idx] == b'E').unwrap();
+    let start = m.keys().find(|&idx| m[idx] == b'S').unwrap();
+    let end = m.keys().find(|&idx| m[idx] == b'E').unwrap();
     m[start] = b'a';
     m[end] = b'z';
     (m, start, end)

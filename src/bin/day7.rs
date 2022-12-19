@@ -23,7 +23,7 @@ fn get_file_tree_sizes(input: &str) -> HashMap<String, u32> {
             "ls" => {
                 let total_size = lines
                     // take until we hit the next command
-                    .peeking_take_while(|line| !line.starts_with("$"))
+                    .peeking_take_while(|line| !line.starts_with('$'))
                     .fold(0u32, |acc, file| {
                         let (file_type, _) = file.split_whitespace().collect_tuple().unwrap();
                         if let Ok(size) = file_type.parse::<u32>() {
@@ -34,7 +34,7 @@ fn get_file_tree_sizes(input: &str) -> HashMap<String, u32> {
                     });
                 // Update filesize for every single ancestor directory
                 for i in 0..curr_path.len() {
-                    let path = (&curr_path[0..=i]).join("/");
+                    let path = curr_path[0..=i].join("/");
                     size_map
                         .entry(path)
                         .and_modify(|size| *size += total_size)

@@ -1,5 +1,4 @@
 use dotenv::dotenv;
-use reqwest;
 use std::env;
 use std::fs;
 

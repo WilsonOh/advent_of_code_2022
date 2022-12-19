@@ -16,8 +16,8 @@ fn parse_graph(input: &str) -> (HashMap<String, Vec<String>>, HashMap<String, u3
     for line in input.lines() {
         let captures = re.captures(line).unwrap();
         let node = &captures["node"];
-        let flow_rate: u32 = (&captures["flow_rate"]).parse().unwrap();
-        let neighbours = (&captures["neighbours"])
+        let flow_rate: u32 = captures["flow_rate"].parse().unwrap();
+        let neighbours = captures["neighbours"]
             .split(", ")
             .map(|s| s.to_string())
             .collect_vec();

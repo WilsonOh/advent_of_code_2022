@@ -2,7 +2,7 @@ use anyhow::Result;
 use itertools::Itertools;
 use std::str::Chars;
 
-#[derive(Debug, Clone, PartialEq, Eq, Ord)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 enum TreeNode {
     Internal(Vec<TreeNode>),
     Leaf(u32),
@@ -10,22 +10,28 @@ enum TreeNode {
 
 impl PartialOrd for TreeNode {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for TreeNode {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         match (self, other) {
             (TreeNode::Internal(children_one), TreeNode::Internal(children_two)) => {
                 for (c1, c2) in children_one.iter().zip(children_two) {
                     if c1 != c2 {
-                        return c1.partial_cmp(c2);
+                        return c1.cmp(c2);
                     }
                 }
-                children_one.len().partial_cmp(&children_two.len())
+                children_one.len().cmp(&children_two.len())
             }
             (TreeNode::Internal(_), TreeNode::Leaf(val)) => {
-                self.partial_cmp(&TreeNode::Internal(vec![TreeNode::Leaf(*val)]))
+                self.cmp(&TreeNode::Internal(vec![TreeNode::Leaf(*val)]))
             }
             (TreeNode::Leaf(val), TreeNode::Internal(_)) => {
-                TreeNode::Internal(vec![TreeNode::Leaf(*val)]).partial_cmp(other)
+                TreeNode::Internal(vec![TreeNode::Leaf(*val)]).cmp(other)
             }
-            (TreeNode::Leaf(val1), TreeNode::Leaf(val2)) => val1.partial_cmp(val2),
+            (TreeNode::Leaf(val1), TreeNode::Leaf(val2)) => val1.cmp(val2),
         }
     }
 }
@@ -60,7 +66,7 @@ fn part_one(input: &str) -> u32 {
         .trim()
         .split("\n\n")
         .filter_map(|line| {
-            line.split("\n")
+            line.split('\n')
                 .map(|node| parse_node(&mut node.chars()))
                 .collect_tuple()
         })
@@ -81,12 +87,9 @@ fn part_two(input: &str) -> u32 {
     let mut nodes = input
         .trim()
         .split("\n\n")
-        .flat_map(|pair| pair.split("\n"))
+        .flat_map(|pair| pair.split('\n'))
         .map(|node| parse_node(&mut node.chars()))
         .collect_vec();
-    for node in &nodes {
-        println!("{node:?}");
-    }
     let dividers = vec![
         parse_node(&mut "[[2]]".chars()),
         parse_node(&mut "[[6]]".chars()),
@@ -103,7 +106,7 @@ fn part_two(input: &str) -> u32 {
 }
 
 fn main() -> Result<()> {
-    let input = std::fs::read_to_string("sample.txt")?;
+    let input = std::fs::read_to_string("input.txt")?;
     let part_one_ans = part_one(&input);
     let part_two_ans = part_two(&input);
     println!("part one: {part_one_ans}");

@@ -38,43 +38,42 @@ fn has_horizontal_collision(
 ) -> bool {
     match rock_type {
         RockType::Line => {
-            return new_pos.1 < 0
+            new_pos.1 < 0
                 || new_pos.1 + 3 > 6
                 || set.contains(&(new_pos.0, new_pos.1 + 3))
                 || set.contains(new_pos)
         }
         RockType::Plus => {
-            return new_pos.1 < 0
+            new_pos.1 < 0
                 || new_pos.1 + 2 > 6
                 || set.contains(new_pos)
                 || set.contains(&(new_pos.0, new_pos.1 + 2))
                 || set.contains(&(new_pos.0 - 1, new_pos.1 + 1))
-                || set.contains(&(new_pos.0 + 1, new_pos.1 + 1));
+                || set.contains(&(new_pos.0 + 1, new_pos.1 + 1))
         }
         RockType::ReverseL => {
-            let ans = new_pos.1 < 0
+            new_pos.1 < 0
                 || new_pos.1 + 2 > 6
                 || set.contains(new_pos)
                 || set.contains(&(new_pos.0, new_pos.1 + 2))
                 || set.contains(&(new_pos.0 + 1, new_pos.1 + 2))
-                || set.contains(&(new_pos.0 + 2, new_pos.1 + 2));
-            ans
+                || set.contains(&(new_pos.0 + 2, new_pos.1 + 2))
         }
         RockType::Stick => {
-            return new_pos.1 < 0
+            new_pos.1 < 0
                 || new_pos.1 > 6
                 || set.contains(new_pos)
                 || set.contains(&(new_pos.0 + 1, new_pos.1))
                 || set.contains(&(new_pos.0 + 2, new_pos.1))
-                || set.contains(&(new_pos.0 + 3, new_pos.1));
+                || set.contains(&(new_pos.0 + 3, new_pos.1))
         }
         RockType::Square => {
-            return new_pos.1 < 0
+            new_pos.1 < 0
                 || new_pos.1 + 1 > 6
                 || set.contains(new_pos)
                 || set.contains(&(new_pos.0 + 1, new_pos.1))
                 || set.contains(&(new_pos.0, new_pos.1 + 1))
-                || set.contains(&(new_pos.0 + 1, new_pos.1 + 1));
+                || set.contains(&(new_pos.0 + 1, new_pos.1 + 1))
         }
     }
 }
@@ -86,29 +85,27 @@ fn has_vertical_collision(
 ) -> bool {
     match rock_type {
         RockType::Line => {
-            return new_pos.0 < 0
+            new_pos.0 < 0
                 || set.contains(new_pos)
                 || set.contains(&(new_pos.0, new_pos.1 + 1))
                 || set.contains(&(new_pos.0, new_pos.1 + 2))
                 || set.contains(&(new_pos.0, new_pos.1 + 3))
         }
         RockType::Plus => {
-            return new_pos.0 < 0
+            new_pos.0 < 0
                 || set.contains(new_pos)
                 || set.contains(&(new_pos.0, new_pos.1 + 2))
                 || set.contains(&(new_pos.0 - 1, new_pos.1 + 1))
         }
         RockType::ReverseL => {
-            return new_pos.0 < 0
+            new_pos.0 < 0
                 || set.contains(new_pos)
                 || set.contains(&(new_pos.0, new_pos.1 + 1))
                 || set.contains(&(new_pos.0, new_pos.1 + 2))
         }
-        RockType::Stick => return new_pos.0 < 0 || set.contains(new_pos),
+        RockType::Stick => new_pos.0 < 0 || set.contains(new_pos),
         RockType::Square => {
-            return new_pos.0 < 0
-                || set.contains(new_pos)
-                || set.contains(&(new_pos.0, new_pos.1 + 1))
+            new_pos.0 < 0 || set.contains(new_pos) || set.contains(&(new_pos.0, new_pos.1 + 1))
         }
     }
 }
@@ -214,8 +211,7 @@ fn simulate(dirs: &[Direction], num_stones: u64) -> u64 {
                 curr_rock_pos = new_pos;
             } else {
                 add_rock_to_set(&mut set, curr_rock, &curr_rock_pos);
-                let curr_state: Signature =
-                    (get_deltas(&set, 30), curr_rock.clone(), curr_dir.clone());
+                let curr_state: Signature = (get_deltas(&set, 30), *curr_rock, *curr_dir);
                 let (curr_top, _) = set.iter().next_back().unwrap();
                 if added == 0 && cycle_check.contains_key(&curr_state) {
                     let (last_num_stones, last_top) = cycle_check[&curr_state];

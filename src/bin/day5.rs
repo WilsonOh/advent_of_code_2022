@@ -19,7 +19,7 @@ fn parse_input(input: &str) -> (Vec<VecDeque<char>>, Vec<Move>) {
     lines
         .by_ref()
         // Basically iterate every line until we hit a digit (end of the stacks)
-        .take_while(|line| !line.chars().nth(1).unwrap().is_digit(10))
+        .take_while(|line| !line.chars().nth(1).unwrap().is_ascii_digit())
         .for_each(|line| {
             // initialize the stacks upon first run
             if ret.is_empty() {
@@ -54,7 +54,7 @@ fn parse_input(input: &str) -> (Vec<VecDeque<char>>, Vec<Move>) {
 }
 
 fn part_one(input: &str) -> String {
-    let (mut stacks, moves) = parse_input(&input);
+    let (mut stacks, moves) = parse_input(input);
     for m in moves {
         for _ in 0..m.size {
             let to_ins = stacks[m.from].pop_back().unwrap();
@@ -65,7 +65,7 @@ fn part_one(input: &str) -> String {
 }
 
 fn part_two(input: &str) -> String {
-    let (mut stacks, moves) = parse_input(&input);
+    let (mut stacks, moves) = parse_input(input);
     for m in moves {
         let idx = stacks[m.from].len() - m.size;
         let mut to_ins: VecDeque<_> = stacks[m.from].drain(idx..).collect();

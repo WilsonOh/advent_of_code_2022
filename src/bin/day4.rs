@@ -8,7 +8,7 @@ use std::fs;
 type Section = (u32, u32, u32, u32);
 
 fn get_range(pair: &str) -> (u32, u32) {
-    pair.split("-")
+    pair.split('-')
         .filter_map(|num| num.parse::<u32>().ok())
         .collect_tuple()
         .unwrap()
