@@ -1,48 +1,35 @@
+use anyhow::Result;
 use std::collections::VecDeque;
 
-use anyhow::Result;
-
-fn parse_list(input: &str) -> VecDeque<i32> {
-    input.lines().filter_map(|line| line.parse().ok()).collect()
-}
-
-fn part_one(input: &str) -> u32 {
-    let mut nums = parse_list(input);
-    let mut indices: VecDeque<usize> = (0..nums.len()).collect();
-    let len = nums.len() as i32;
-    for i in 0..indices.len() {
-        let idx = indices[i];
-        let curr = nums[idx] + idx as i32;
-        let mut oor = true;
-        let new_idx = if curr >= 0 && curr < len {
-            oor = false;
-            curr
-        } else if curr < 0 {
-            (curr - 1).rem_euclid(len)
-        } else {
-            (curr + 1).rem_euclid(len)
-        };
-        println!(
-            "num = {curr} idx = {idx} new_idx = {new_idx} nums: {nums:?} indices: {indices:?}"
-        );
-        assert!(
-            new_idx >= 0 && new_idx < len,
-            "new index is within valid bounds"
-        );
-        let removed = nums.remove(idx).unwrap();
-        nums.insert(new_idx as usize, removed);
-        let removed_idx = indices.remove(idx).unwrap();
-        if oor {
-            indices.insert(new_idx as usize - 1, removed_idx);
-        } else {
-            indices.insert(new_idx as usize, removed_idx);
+fn mix(input: &str, encryption_key: i64, num_mixes: usize) -> i64 {
+    let mut nums: VecDeque<(usize, i64)> = input
+        .lines()
+        .filter_map(|line| line.parse::<i64>().ok())
+        .map(|num| num * encryption_key)
+        .enumerate()
+        .collect();
+    for _ in 0..num_mixes {
+        for i in 0..nums.len() {
+            while nums[0].0 != i {
+                nums.rotate_left(1);
+            }
+            let val = nums.pop_front().unwrap();
+            let shift_num = val.1.rem_euclid(nums.len() as i64);
+            nums.rotate_left(shift_num as usize);
+            nums.push_back(val);
         }
     }
-    0
+    let zero_idx = nums.iter().position(|(_, val)| *val == 0).unwrap();
+    (1..=3)
+        .map(|i| nums[(zero_idx + (i * 1000)).rem_euclid(nums.len())].1 as i64)
+        .sum()
 }
 
 fn main() -> Result<()> {
-    let input = std::fs::read_to_string("sample.txt")?;
-    part_one(&input);
+    let input = std::fs::read_to_string("input.txt")?;
+    let part_one_ans = mix(&input, 1, 1);
+    let part_two_ans = mix(&input, 811589153, 10);
+    println!("part one: {part_one_ans}");
+    println!("part two: {part_two_ans}");
     Ok(())
 }
